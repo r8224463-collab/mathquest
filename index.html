@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a1a4a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MathQuest">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>MathQuest</title>
+<style>
+:root{
+  --ink:#08133a; --paper:#0d2159; --paper2:#13306f; --line:rgba(255,255,255,.08);
+  --chalk:#f4f7ff; --dim:#a9b8e6; --hi:#ffd23f; --ok:#5be3a4; --bad:#ff7b7b; --sky:#7cc4ff;
+  --r:16px;
+  --serif:Georgia,'Noto Serif','Times New Roman',serif;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--ink);color:var(--chalk);font-family:var(--sans);}
+body{min-height:100vh;
+  background:
+   linear-gradient(var(--line) 1px,transparent 1px) 0 0/28px 28px,
+   linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/28px 28px,
+   radial-gradient(120% 60% at 50% -10%,#1b3d92 0%,var(--ink) 70%);
+  background-attachment:fixed;}
+#app{max-width:520px;margin:0 auto;padding:18px 16px calc(96px + env(safe-area-inset-bottom));}
+h1,h2,h3{margin:0;font-family:var(--serif);font-weight:700;letter-spacing:.2px}
+h3{font-size:18px;margin:22px 2px 10px;color:var(--chalk)}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+button:focus-visible,[tabindex]:focus-visible,input:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+.small{font-size:13px;color:var(--dim)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+
+/* top */
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+.hi{font-family:var(--serif);font-size:24px;line-height:1.15}
+.sub{font-size:13px;color:var(--dim);margin-top:4px;max-width:230px}
+.chips{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.chip{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px;white-space:nowrap}
+
+/* the chalkboard hero */
+.hero{position:relative;background:var(--paper2);border:2px solid rgba(255,255,255,.18);border-radius:22px;padding:18px 18px 16px;box-shadow:inset 0 0 0 4px rgba(0,0,0,.12)}
+.hero .big{font-family:var(--serif);font-size:44px;line-height:1;color:var(--hi)}
+.hero .lab{font-size:14px;color:var(--dim)}
+.bar{height:12px;border-radius:99px;background:rgba(0,0,0,.35);overflow:hidden;margin:12px 0 8px}
+.bar i{display:block;height:100%;border-radius:99px;background:repeating-linear-gradient(115deg,var(--hi) 0 10px,#ffbf1f 10px 20px);transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.bar.thin{height:6px;margin:8px 0 0}
+.bar.mint i{background:var(--ok)}
+.lvl{margin-top:12px;padding-top:12px;border-top:1px dashed rgba(255,255,255,.2);font-size:13px;color:var(--dim)}
+.lvl b{color:var(--chalk)}
+
+.nudge{margin-top:12px;background:rgba(255,210,63,.12);border:1px solid rgba(255,210,63,.4);padding:10px 12px;border-radius:12px;font-size:13px}
+
+/* route map on home */
+.route{position:relative;margin:4px 0 6px;padding-left:34px}
+.route:before{content:"";position:absolute;left:14px;top:14px;bottom:14px;width:0;border-left:3px dashed rgba(255,255,255,.28)}
+.stop{position:relative;display:block;width:100%;text-align:left;background:rgba(10,19,58,.75);border:1px solid var(--line);border-radius:var(--r);padding:14px 14px 12px;margin-bottom:12px}
+.stop .pin{position:absolute;left:-34px;top:16px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:15px;font-weight:700;color:var(--ink);border:3px solid var(--ink)}
+.stop .nm{font-family:var(--serif);font-size:18px;line-height:1.2}
+.stop .pct{font-family:var(--serif);font-size:22px}
+.stop:active{transform:scale(.99)}
+
+.btn{display:block;width:100%;padding:14px 16px;border-radius:14px;font-weight:700;text-align:center;background:var(--hi);color:var(--ink);box-shadow:0 4px 0 #b78e00}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #b78e00}
+.btn.ghost{background:transparent;color:var(--chalk);border:2px solid rgba(255,255,255,.28);box-shadow:none}
+.btn.mint{background:var(--ok);box-shadow:0 4px 0 #2a9f70}
+.btn.sm{display:inline-block;width:auto;padding:9px 14px;font-size:14px}
+.gap{height:10px}
+
+/* unit + topic pages */
+.back{font-size:14px;color:var(--dim);padding:6px 0 10px;display:inline-block}
+.uhead{border-radius:20px;padding:16px;border:2px solid;background:rgba(10,19,58,.7);margin-bottom:14px}
+.uhead h2{font-size:24px;line-height:1.15;margin:4px 0 2px}
+.trail{position:relative;padding-left:34px;margin-top:6px}
+.trail:before{content:"";position:absolute;left:14px;top:20px;bottom:20px;border-left:3px solid rgba(255,255,255,.22)}
+.node{position:relative;display:block;width:100%;text-align:left;background:rgba(10,19,58,.75);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.node .dot{position:absolute;left:-33px;top:14px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px;background:var(--ink);border:3px solid rgba(255,255,255,.3)}
+.node.read .dot{border-color:var(--sky)}
+.node.pass .dot{border-color:var(--ok);background:var(--ok);color:var(--ink);font-weight:800}
+.node .tt{font-weight:600;line-height:1.3}
+.score{font-family:var(--serif);font-size:17px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.1);color:var(--dim);margin-right:6px}
+
+.card{background:rgba(10,19,58,.75);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.key{border-left:4px solid var(--hi);background:rgba(255,210,63,.08);border-radius:4px 14px 14px 4px;padding:12px 14px;line-height:1.5;font-family:var(--serif);font-size:16px}
+.toggle{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px;border-radius:14px;border:2px dashed rgba(255,255,255,.3);margin:14px 0}
+.toggle .box{width:26px;height:26px;border-radius:8px;border:2px solid var(--dim);display:grid;place-items:center;font-weight:800;color:var(--ink)}
+.toggle.on{border-style:solid;border-color:var(--sky);background:rgba(124,196,255,.1)}
+.toggle.on .box{background:var(--sky);border-color:var(--sky)}
+.hist{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.hist span{font-family:var(--serif);padding:3px 9px;border-radius:8px;background:rgba(255,255,255,.08);font-size:14px}
+
+/* quiz */
+.qtop{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.qtop .x{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.1);font-size:18px}
+.qtop .bar{flex:1;margin:0}
+.qn{font-size:13px;color:var(--dim);margin:14px 2px 6px}
+.qtext{font-family:var(--serif);font-size:21px;line-height:1.35;background:var(--paper2);border:2px solid rgba(255,255,255,.16);border-radius:18px;padding:18px;margin-bottom:14px}
+.opt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:14px;border-radius:14px;border:2px solid rgba(255,255,255,.16);background:rgba(10,19,58,.7);margin-bottom:10px;line-height:1.35;font-size:16px}
+.opt b{flex:none;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.12);display:grid;place-items:center;font-size:13px}
+.opt.sel{border-color:var(--hi);background:rgba(255,210,63,.12)}
+.opt.sel b{background:var(--hi);color:var(--ink)}
+.opt.ok{border-color:var(--ok);background:rgba(91,227,164,.12)}
+.opt.ok b{background:var(--ok);color:var(--ink)}
+.opt.no{border-color:var(--bad);background:rgba(255,123,123,.12)}
+.opt.no b{background:var(--bad);color:var(--ink)}
+.navrow{display:flex;gap:10px;margin-top:6px}
+.navrow .btn{flex:1}
+
+/* result */
+.res{text-align:center;padding:20px 16px;border-radius:22px;background:var(--paper2);border:2px solid rgba(255,255,255,.18)}
+.res .mark{font-family:var(--serif);font-size:64px;line-height:1;color:var(--hi)}
+.res .pc{font-size:18px;color:var(--dim);margin-top:4px}
+.stars{font-size:30px;letter-spacing:6px;margin:8px 0}
+.remark{margin-top:14px;text-align:left;background:rgba(255,255,255,.06);border-radius:14px;padding:14px;line-height:1.5}
+.remark b{font-family:var(--serif);font-size:18px;display:block;margin-bottom:4px}
+.rev{margin-top:10px;background:rgba(10,19,58,.75);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.rev summary{cursor:pointer;line-height:1.4;font-weight:600}
+.rev p{margin:8px 0 0;font-size:14px;line-height:1.45;color:var(--dim)}
+.rev .g{color:var(--ok)} .rev .r{color:var(--bad)}
+
+/* stats */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:rgba(10,19,58,.75);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat .n{font-family:var(--serif);font-size:28px;color:var(--hi)}
+.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.bd{text-align:center;padding:12px 6px;border-radius:14px;background:rgba(10,19,58,.75);border:1px solid var(--line);font-size:12px;line-height:1.3}
+.bd .em{font-size:28px;display:block;margin-bottom:4px}
+.bd.off{opacity:.35;filter:grayscale(1)}
+.week{display:flex;align-items:flex-end;gap:8px;height:90px;margin-top:8px}
+.week div{flex:1;text-align:center;font-size:11px;color:var(--dim)}
+.week i{display:block;border-radius:6px 6px 0 0;background:var(--sky);min-height:3px;margin-bottom:4px}
+
+/* settings */
+label.f{display:block;font-size:13px;color:var(--dim);margin:12px 0 6px}
+input[type=text],input[type=password]{width:100%;padding:12px;border-radius:12px;border:2px solid rgba(255,255,255,.2);background:rgba(0,0,0,.25);color:var(--chalk);font-size:16px}
+
+/* lock */
+.lock{text-align:center;padding-top:8vh}
+.dots{display:flex;gap:14px;justify-content:center;margin:22px 0}
+.dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--dim)}
+.dots i.on{background:var(--hi);border-color:var(--hi)}
+.pad{display:grid;grid-template-columns:repeat(3,76px);gap:14px;justify-content:center}
+.pad button{height:76px;border-radius:50%;background:rgba(255,255,255,.1);font-family:var(--serif);font-size:28px}
+
+/* tab bar */
+nav{position:fixed;left:0;right:0;bottom:0;background:rgba(8,19,58,.96);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav div{display:flex;width:100%;max-width:520px}
+nav button{flex:1;padding:10px 0 9px;font-size:12px;color:var(--dim)}
+nav button span{display:block;font-size:22px;line-height:1.1}
+nav button.on{color:var(--hi)}
+#toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translate(-50%,20px);background:var(--chalk);color:var(--ink);padding:10px 16px;border-radius:99px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:.3s;z-index:20;max-width:90%;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:30}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav id="nav"><div>
+  <button data-act="tab" data-v="home"><span>🗺️</span>Route</button>
+  <button data-act="tab" data-v="stats"><span>🏅</span>Progress</button>
+  <button data-act="tab" data-v="settings"><span>⚙️</span>Settings</button>
+</div></nav>
+<div id="toast"></div>
+<canvas id="fx"></canvas>
+<script src="data.js"></script>
+<script>
+"use strict";
+/* ---------- storage ---------- */
+const KEY="mathquest.v1";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function fresh(){return{v:1,name:"",xp:0,streak:{last:null,count:0,best:0},topics:{},tests:[],badges:{},days:{},pin:null,salt:null,lastBackup:0,created:Date.now()}}
+function load(){try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&r.v===1)return Object.assign(fresh(),r)}catch(e){}return fresh()}
+let S=load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast("⚠️ Couldn't save — storage is blocked or full")}}
+if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().catch(()=>{})}
+
+/* ---------- helpers ---------- */
+const ALLT=UNITS.flatMap(u=>u.topics.map(t=>Object.assign({u},t)));
+const tById=id=>ALLT.find(t=>t.id===id);
+const uById=id=>UNITS.find(u=>u.id===id);
+const ts=id=>S.topics[id]||{read:false,best:-1,att:0,hist:[]};
+const passed=id=>ts(id).best>=3;
+const tPct=id=>(ts(id).read?50:0)+(passed(id)?50:0);
+const uPct=u=>Math.round(u.topics.reduce((a,t)=>a+tPct(t.id),0)/u.topics.length);
+const allPct=()=>Math.round(ALLT.reduce((a,t)=>a+tPct(t.id),0)/ALLT.length);
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const dayAgo=n=>{const d=new Date();d.setDate(d.getDate()-n);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const TITLES=["Rookie","Learner","Problem Solver","Strategist","Calculus Ninja","Integral Master","Legend"];
+function level(){const n=Math.floor(S.xp/150)+1;return{n,title:TITLES[Math.min(TITLES.length-1,n-1)],pct:Math.round((S.xp%150)/150*100),next:150-(S.xp%150)}}
+function touchStreak(){const t=today();if(S.streak.last===t)return;S.streak.count=(S.streak.last===dayAgo(1))?S.streak.count+1:1;S.streak.last=t;S.streak.best=Math.max(S.streak.best||0,S.streak.count)}
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("show"),2600)}
+const QUOTES=["Small steps daily beat marathon nights.","One topic today keeps the backlog away.","Mistakes in practice are free. Use them.","Derive it once, remember it forever.","Consistency > intensity.","Solve, check, repeat."];
+const greet=()=>{const h=new Date().getHours();return h<5?"Late night":h<12?"Good morning":h<17?"Good afternoon":"Good evening"};
+
+/* ---------- badges ---------- */
+const BADGES=[
+ {id:"first",e:"🚀",t:"First test",ok:()=>S.tests.length+Object.values(S.topics).reduce((a,x)=>a+(x.att||0),0)>=1},
+ {id:"perfect",e:"💯",t:"Perfect 5/5",ok:()=>Object.values(S.topics).some(x=>x.best===5)},
+ {id:"s3",e:"🔥",t:"3-day streak",ok:()=>(S.streak.best||0)>=3},
+ {id:"s7",e:"🌋",t:"7-day streak",ok:()=>(S.streak.best||0)>=7},
+ {id:"reader",e:"📖",t:"Read 10 topics",ok:()=>Object.values(S.topics).filter(x=>x.read).length>=10},
+ {id:"p10",e:"🧠",t:"Pass 10 topics",ok:()=>ALLT.filter(t=>passed(t.id)).length>=10},
+ {id:"unit",e:"🏆",t:"Unit complete",ok:()=>UNITS.some(u=>uPct(u)===100)},
+ {id:"mock",e:"🎯",t:"Took a unit or mock test",ok:()=>S.tests.length>=1},
+ {id:"all",e:"👑",t:"100% syllabus",ok:()=>allPct()===100}
+];
+function checkBadges(){const got=[];for(const b of BADGES){if(!S.badges[b.id]&&b.ok()){S.badges[b.id]=Date.now();got.push(b)}}
+ if(got.length)setTimeout(()=>toast("New badge: "+got.map(b=>b.e+" "+b.t).join(", ")),900);return got}
+
+/* ---------- navigation ---------- */
+let V={name:"home",p:{}};let locked=!!S.pin;let Q=null,R=null,L={buf:"",err:""};
+history.replaceState({name:"home",p:{}},"");
+function go(name,p={}){V={name,p};history.pushState({name,p},"");render();window.scrollTo(0,0)}
+window.addEventListener("popstate",e=>{V=e.state||{name:"home",p:{}};render()});
+function root(name){V={name,p:{}};history.replaceState({name,p:{}},"");render();window.scrollTo(0,0)}
+
+/* ---------- views ---------- */
+function bar(p,cls=""){return `<div class="bar ${cls}"><i style="width:${p}%"></i></div>`}
+function vHome(){
+ const p=allPct(),lv=level();
+ const q=QUOTES[new Date().getDate()%QUOTES.length];
+ const days=S.lastBackup?Math.floor((Date.now()-S.lastBackup)/864e5):99;
+ const hasProg=p>0||S.tests.length>0;
+ const nudge=(hasProg&&days>=7)?`<div class="nudge">💾 Your last backup was ${S.lastBackup?days+" days ago":"never"}. Export one in Settings so a phone reset can't erase your progress.</div>`:"";
+ const stops=UNITS.map(u=>{const pc=uPct(u),d=u.topics.filter(t=>passed(t.id)).length;
+  return `<button class="stop" data-act="unit" data-id="${u.id}">
+   <span class="pin" style="background:${u.c}">${pc===100?"✓":u.n.slice(-1)}</span>
+   <div class="row"><div><div class="small">${u.n}</div><div class="nm">${u.t}</div></div><div class="pct" style="color:${u.c}">${pc}%</div></div>
+   ${bar(pc)}<div class="small">${d} of ${u.topics.length} topics passed · ${u.topics.filter(t=>ts(t.id).read).length} read</div></button>`}).join("");
+ return `<div class="top"><div><div class="hi">${greet()}${S.name?", "+esc(S.name):""}</div><div class="sub">${q}</div></div>
+  <div class="chips"><span class="chip">🔥 ${S.streak.count} day${S.streak.count===1?"":"s"}</span><span class="chip">⭐ ${S.xp} XP</span></div></div>
+  <section class="hero">
+   <div class="row"><div><div class="lab">Syllabus completed</div><div class="big">${p}%</div></div><div style="text-align:right"><div class="lab">Remaining</div><div class="big" style="color:var(--chalk)">${100-p}%</div></div></div>
+   ${bar(p)}
+   <div class="lvl">Level ${lv.n} · <b>${lv.title}</b> — ${lv.next} XP to next level${bar(lv.pct,"thin mint")}</div>
+  </section>${nudge}
+  <h3>Your study route</h3><div class="route">${stops}</div>
+  <button class="btn ghost" data-act="mock">🎯 Full mock test · 20 mixed questions</button>
+  ${window.__ip?`<div class="gap"></div><button class="btn mint" data-act="install">📲 Install on this phone</button>`:""}`;
+}
+function vUnit(){
+ const u=uById(V.p.id),pc=uPct(u);
+ const nodes=u.topics.map(t=>{const s=ts(t.id),cls=passed(t.id)?"pass":s.read?"read":"";
+  return `<button class="node ${cls}" data-act="topic" data-id="${t.id}"><span class="dot">${passed(t.id)?"✓":s.read?"📖":""}</span>
+   <div class="row"><div class="tt">${t.t}</div><div class="score">${s.best>=0?s.best+"/5":"—"}</div></div>
+   <div class="small" style="margin-top:4px"><span class="tag">${t.notes}</span>${tPct(t.id)}% done</div>${bar(tPct(t.id),"thin")}</button>`}).join("");
+ const pool=u.topics.reduce((a,t)=>a+t.qs.length,0);
+ return `<button class="back" data-act="back">‹ Route</button>
+  <div class="uhead" style="border-color:${u.c}">
+   <div class="small">${u.n}</div><h2>${u.e} ${u.t}</h2>
+   <div class="row small"><span>${pc}% complete</span><span>${100-pc}% to go</span></div>${bar(pc)}
+  </div>
+  <div class="trail">${nodes}</div>
+  <div class="gap"></div>
+  <button class="btn" data-act="unittest" data-id="${u.id}">📝 Unit test · 10 mixed questions</button>
+  <div class="small" style="margin-top:8px;text-align:center">Drawn from ${pool} questions across ${u.topics.length} topics</div>
+  ${(()=>{const b=S.tests.filter(x=>x.scope===u.id).map(x=>x.s/x.t);return b.length?`<div class="small" style="text-align:center;margin-top:4px">Best unit test: ${Math.round(Math.max(...b)*100)}%</div>`:""})()}`;
+}
+function vTopic(){
+ const t=tById(V.p.id),s=ts(t.id),idx=t.u.topics.findIndex(x=>x.id===t.id),nx=t.u.topics[idx+1];
+ const hist=(s.hist||[]).slice(-8).map(h=>`<span>${h}/5</span>`).join("");
+ return `<button class="back" data-act="back">‹ ${t.u.n}</button>
+  <div class="small">${t.u.n} · your notes ${t.notes}</div>
+  <h2 style="font-size:26px;margin:4px 0 14px;line-height:1.2">${t.t}</h2>
+  <div class="key">${t.k}</div>
+  <button class="toggle ${s.read?"on":""}" data-act="read" data-id="${t.id}" role="switch" aria-checked="${!!s.read}">
+   <span class="box">${s.read?"✓":""}</span><span><b>${s.read?"Notes studied":"I've studied this topic"}</b><br><span class="small">Counts for 50% of the topic. Tap again to undo.</span></span></button>
+  <div class="card"><div class="row"><b>Test result</b><span class="score">${s.best>=0?"Best "+s.best+"/5":"Not attempted"}</span></div>
+   <div class="small" style="margin-top:4px">Pass mark 3/5 · counts for the other 50% · ${s.att||0} attempt${s.att===1?"":"s"}</div>
+   ${hist?`<div class="hist">${hist}</div>`:""}</div>
+  <div class="gap"></div>
+  <button class="btn" data-act="start" data-id="${t.id}">${s.att?"Retake test":"Start test"} · 5 questions</button>
+  ${nx?`<div class="gap"></div><button class="btn ghost" data-act="topic" data-id="${nx.id}">Next topic: ${nx.t}</button>`:""}`;
+}
+function vQuiz(){
+ const it=Q.items[Q.i],last=Q.i===Q.items.length-1,a=Q.ans[Q.i];
+ const opts=it.o.map((o,k)=>`<button class="opt ${a===k?"sel":""}" data-act="pick" data-k="${k}"><b>${"ABCD"[k]}</b><span>${esc(o.t)}</span></button>`).join("");
+ return `<div class="qtop"><button class="x" data-act="quit" aria-label="Quit test">✕</button>${bar(Math.round((Q.i+(a!=null?1:0))/Q.items.length*100))}<span class="small">${Q.i+1}/${Q.items.length}</span></div>
+  <div class="small" style="margin:6px 2px">${esc(Q.title)}</div>
+  <div class="qtext">${esc(it.q)}</div>${opts}
+  <div class="navrow">${Q.i>0?`<button class="btn ghost" data-act="prev">Back</button>`:""}
+  <button class="btn ${a==null?"ghost":""}" data-act="${last?"finish":"next"}" ${a==null?"disabled style='opacity:.45'":""}>${last?"Submit test":"Next"}</button></div>`;
+}
+function remark(pct,r){
+ const weak=[...new Set(r.items.filter((it,i)=>r.ans[i]!==it.ok).map(it=>it.tid))].map(id=>tById(id));
+ const wk=weak.length?` Revisit: ${weak.slice(0,3).map(t=>t.t+" ("+t.notes+")").join("; ")}.`:"";
+ if(pct===100)return["Flawless. 🏆","Every answer right. Move on, but come back in a few days to check it stuck."];
+ if(pct>=80)return["Excellent work. 🎉","You clearly know this. Skim the ones you missed and you're done."+wk];
+ if(pct>=60)return["Good, you passed. ✅","Solid understanding with a few gaps. Read the explanations below and retake once for a higher score."+wk];
+ if(pct>=40)return["Almost there. 📈","You have the basics but it's not steady yet. Re-read the key idea, redo the matching questions from your notes, then retake."+wk];
+ return["Time to rebuild. 🔧","This is a signal, not a verdict. Go back to the notes, work two examples by hand, then try again."+wk];
+}
+function vResult(){
+ const pc=R.pct,[h,m]=remark(pc,R);
+ const stars=pc>=80?"⭐⭐⭐":pc>=60?"⭐⭐☆":pc>=40?"⭐☆☆":"☆☆☆";
+ const rev=R.items.map((it,i)=>{const ok=R.ans[i]===it.ok;
+  return `<details class="rev"><summary>${ok?"✅":"❌"} ${esc(it.q)}</summary>
+   <p>Your answer: <span class="${ok?"g":"r"}">${R.ans[i]==null?"—":esc(it.o[R.ans[i]].t)}</span></p>
+   ${ok?"":`<p>Correct: <span class="g">${esc(it.o[it.ok].t)}</span></p>`}<p>${esc(it.e)}</p></details>`}).join("");
+ const nx=R.mode==="topic"?(()=>{const t=tById(R.ref),i=t.u.topics.findIndex(x=>x.id===t.id);return t.u.topics[i+1]})():null;
+ return `<div class="res"><div class="small">${esc(R.title)}</div><div class="mark">${R.score}/${R.total}</div><div class="pc">${pc}%</div>
+  <div class="stars">${stars}</div><div class="chip" style="display:inline-block">+${R.xp} XP</div>
+  <div class="remark"><b>${h}</b>${m}</div></div>
+  <div class="gap"></div>
+  ${R.mode==="topic"?`<button class="btn" data-act="start" data-id="${R.ref}">Retake topic test</button><div class="gap"></div>
+   ${nx&&pc>=60?`<button class="btn mint" data-act="topic" data-id="${nx.id}">Next topic ›</button><div class="gap"></div>`:""}
+   <button class="btn ghost" data-act="topic" data-id="${R.ref}">Back to topic</button>`
+  :`<button class="btn ghost" data-act="home">Back to route</button>`}
+  <h3>Review your answers</h3>${rev}`;
+}
+function vStats(){
+ const done=ALLT.filter(t=>passed(t.id)).length,read=ALLT.filter(t=>ts(t.id).read).length;
+ const sc=[];Object.values(S.topics).forEach(x=>(x.hist||[]).forEach(h=>sc.push(h/5)));
+ const avg=sc.length?Math.round(sc.reduce((a,b)=>a+b,0)/sc.length*100):0;
+ const wk=[];for(let i=6;i>=0;i--){const d=dayAgo(i);wk.push({d:d.slice(5),n:S.days[d]||0,l:["Su","Mo","Tu","We","Th","Fr","Sa"][new Date(d.replace(/-/g,"/")).getDay()]})}
+ const mx=Math.max(5,...wk.map(x=>x.n));
+ const tests=S.tests.slice(-6).reverse().map(x=>`<div class="row" style="padding:8px 0;border-bottom:1px dashed var(--line)"><span>${esc(x.label)}<br><span class="small">${x.date}</span></span><span class="score">${x.s}/${x.t}</span></div>`).join("")||`<div class="small">No unit or mock tests yet.</div>`;
+ return `<h2 style="font-size:28px;margin:6px 0 14px">Progress</h2>
+  <div class="grid2">
+   <div class="stat"><div class="n">${done}/${ALLT.length}</div><div class="small">topics passed</div></div>
+   <div class="stat"><div class="n">${read}/${ALLT.length}</div><div class="small">topics studied</div></div>
+   <div class="stat"><div class="n">${avg}%</div><div class="small">average topic score</div></div>
+   <div class="stat"><div class="n">${S.streak.count} 🔥</div><div class="small">day streak (best ${S.streak.best||0})</div></div></div>
+  <h3>Questions answered · last 7 days</h3>
+  <div class="card"><div class="week">${wk.map(x=>`<div><i style="height:${Math.round(x.n/mx*70)}px"></i>${x.l}</div>`).join("")}</div></div>
+  <h3>Badges</h3><div class="badges">${BADGES.map(b=>`<div class="bd ${S.badges[b.id]?"":"off"}"><span class="em">${b.e}</span>${b.t}</div>`).join("")}</div>
+  <h3>Recent unit & mock tests</h3><div class="card">${tests}</div>`;
+}
+function vSettings(){
+ const st=navigator.storage&&navigator.storage.persisted?"…":"n/a";
+ return `<h2 style="font-size:28px;margin:6px 0 4px">Settings</h2><div class="small">All data stays on this phone. There is no account and no server.</div>
+  <label class="f" for="nm">Your name</label>
+  <div class="row"><input id="nm" type="text" maxlength="20" value="${esc(S.name)}" placeholder="e.g. Ritik"><button class="btn sm" data-act="savename">Save</button></div>
+  <h3>App lock</h3>
+  <div class="card"><div class="small" style="margin-bottom:8px">${S.pin?"PIN lock is on. It hides the app from casual access; it does not encrypt the data.":"Set a 4-digit PIN to keep others out of the app."}</div>
+   <input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="4-digit PIN">
+   <div class="gap"></div><div class="row"><button class="btn sm" data-act="setpin">${S.pin?"Change PIN":"Set PIN"}</button>${S.pin?`<button class="btn sm ghost" data-act="rmpin">Remove PIN</button>`:""}</div></div>
+  <h3>Backup</h3>
+  <div class="card"><div class="small" style="margin-bottom:10px">Clearing browser data or uninstalling deletes progress. Export a file now and then and keep it in Drive or WhatsApp saved messages.${S.lastBackup?"<br>Last backup: "+new Date(S.lastBackup).toLocaleDateString():""}</div>
+   <button class="btn mint" data-act="export">Export backup file</button><div class="gap"></div>
+   <button class="btn ghost" data-act="import">Restore from backup</button>
+   <input id="file" type="file" accept="application/json,.json" hidden></div>
+  <h3>Danger zone</h3>
+  <button class="btn ghost" data-act="reset" style="color:var(--bad);border-color:var(--bad)">Reset all progress</button>
+  ${window.__ip?`<div class="gap"></div><button class="btn" data-act="install">📲 Install on this phone</button>`:""}
+  <p class="small" style="margin-top:18px">MathQuest · 135 questions across 27 topics, built from your maths notes.</p>`;
+}
+function vLock(){
+ return `<div class="lock"><div style="font-size:46px">🔒</div><h1 style="font-size:30px;margin-top:8px">MathQuest</h1><div class="small">${L.err||"Enter your PIN"}</div>
+  <div class="dots">${[0,1,2,3].map(i=>`<i class="${i<L.buf.length?"on":""}"></i>`).join("")}</div>
+  <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-act="key" data-d="${n}">${n}</button>`).join("")}<span></span><button data-act="key" data-d="0">0</button><button data-act="key" data-d="x" aria-label="Delete">⌫</button></div></div>`;
+}
+function render(){
+ const el=$("#app");
+ if((V.name==="quiz"&&!Q)||(V.name==="result"&&!R))V={name:"home",p:{}};
+ if(S.pin&&locked){el.innerHTML=vLock();$("#nav").style.display="none";return}
+ const map={home:vHome,unit:vUnit,topic:vTopic,quiz:vQuiz,result:vResult,stats:vStats,settings:vSettings};
+ el.innerHTML=map[V.name]();
+ $("#nav").style.display=["home","stats","settings","unit","topic"].includes(V.name)?"flex":"none";
+ document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===(V.name==="unit"||V.name==="topic"?"home":V.name)));
+}
+
+/* ---------- quiz engine ---------- */
+function buildItems(list){return list.map(({q,tid})=>{const opts=shuffle(q[1].map((t,i)=>({t,i})));return{q:q[0],o:opts,ok:opts.findIndex(x=>x.i===q[2]),e:q[3],tid}})}
+function startQuiz(mode,ref){
+ let pool,title;
+ if(mode==="topic"){const t=tById(ref);pool=shuffle(t.qs.map(q=>({q,tid:t.id})));title=t.t}
+ else if(mode==="unit"){const u=uById(ref);pool=shuffle(u.topics.flatMap(t=>t.qs.map(q=>({q,tid:t.id})))).slice(0,10);title=u.n+" test"}
+ else{pool=shuffle(ALLT.flatMap(t=>t.qs.map(q=>({q,tid:t.id})))).slice(0,20);title="Full mock test"}
+ Q={mode,ref,title,items:buildItems(pool),i:0,ans:[]};go("quiz");
+}
+function finishQuiz(){
+ const total=Q.items.length,score=Q.items.reduce((a,it,i)=>a+(Q.ans[i]===it.ok?1:0),0),pct=Math.round(score/total*100);
+ let xp=score*(Q.mode==="topic"?10:5);const d=today();
+ touchStreak();S.days[d]=(S.days[d]||0)+total;
+ if(Q.mode==="topic"){const s=ts(Q.ref);const was=s.best>=3;
+  S.topics[Q.ref]={read:!!s.read,best:Math.max(s.best,score),att:(s.att||0)+1,hist:(s.hist||[]).concat(score).slice(-20)};
+  if(!was&&score>=3)xp+=20;if(score===5&&s.best<5)xp+=10}
+ else{S.tests.push({scope:Q.mode==="unit"?Q.ref:"mock",label:Q.title,s:score,t:total,date:d}); S.tests=S.tests.slice(-60)}
+ S.xp+=xp;const nb=checkBadges();save();
+ R={mode:Q.mode,ref:Q.ref,title:Q.title,items:Q.items,ans:Q.ans.slice(),score,total,pct,xp};
+ Q=null;history.replaceState({name:"result",p:{}},"");V={name:"result",p:{}};render();window.scrollTo(0,0);
+ if(pct>=80)confetti();
+}
+
+/* ---------- actions ---------- */
+const A={
+ tab:d=>root(d.v),home:()=>root("home"),back:()=>history.back(),
+ unit:d=>go("unit",{id:d.id}),topic:d=>{if(V.name==="result"){history.replaceState({name:"topic",p:{id:d.id}},"");V={name:"topic",p:{id:d.id}};render();window.scrollTo(0,0)}else go("topic",{id:d.id})},
+ read:d=>{const s=ts(d.id);S.topics[d.id]=Object.assign({read:false,best:-1,att:0,hist:[]},s,{read:!s.read});
+   const tt=S.topics[d.id];if(tt.read){touchStreak();if(!tt.rx){tt.rx=1;S.xp+=5;toast("+5 XP · topic marked as studied")}}checkBadges();save();render()},
+ start:d=>startQuiz("topic",d.id),unittest:d=>startQuiz("unit",d.id),mock:()=>startQuiz("mock"),
+ pick:d=>{Q.ans[Q.i]=+d.k;render()},next:()=>{Q.i++;render();window.scrollTo(0,0)},prev:()=>{Q.i--;render();window.scrollTo(0,0)},
+ finish:()=>{if(Q.ans.filter(x=>x!=null).length<Q.items.length)return toast("Answer every question first");finishQuiz()},
+ quit:()=>{if(confirm("Leave this test? Your answers so far won't be saved.")){Q=null;history.back()}},
+ savename:()=>{S.name=$("#nm").value.trim();save();toast("Saved");render()},
+ setpin:async()=>{const p=$("#pin").value;if(!/^\d{4}$/.test(p))return toast("PIN must be exactly 4 digits");
+   S.salt=Math.random().toString(36).slice(2);S.pin=await hashPin(p,S.salt);save();toast("PIN set 🔒");render()},
+ rmpin:()=>{if(confirm("Remove the PIN lock?")){S.pin=null;S.salt=null;locked=false;save();render()}},
+ key:async d=>{if(d.d==="x")L.buf=L.buf.slice(0,-1);else if(L.buf.length<4)L.buf+=d.d;L.err="";
+   if(L.buf.length===4){const ok=(await hashPin(L.buf,S.salt))===S.pin;if(ok){locked=false;L.buf="";render();return}L.buf="";L.err="Wrong PIN, try again"}render()},
+ export:()=>{const b=new Blob([JSON.stringify(S,null,1)],{type:"application/json"});const a=document.createElement("a");
+   a.href=URL.createObjectURL(b);a.download="mathquest-backup-"+today()+".json";document.body.appendChild(a);a.click();a.remove();
+   S.lastBackup=Date.now();save();toast("Backup downloaded");render()},
+ import:()=>$("#file").click(),
+ reset:()=>{if(confirm("Delete ALL progress on this phone? This cannot be undone.")&&confirm("Really delete everything?")){const keep=S.name;S=fresh();S.name=keep;locked=false;save();root("home");toast("Progress reset")}},
+ install:async()=>{if(!window.__ip)return;window.__ip.prompt();await window.__ip.userChoice;window.__ip=null;render()}
+};
+document.addEventListener("click",e=>{const el=e.target.closest("[data-act]");if(!el||el.disabled)return;const f=A[el.dataset.act];if(f)f(el.dataset)});
+document.addEventListener("change",e=>{if(e.target.id!=="file")return;const f=e.target.files[0];if(!f)return;const r=new FileReader();
+ r.onload=()=>{try{const d=JSON.parse(r.result);if(d.v!==1||typeof d.topics!=="object")throw 0;
+  if(confirm("Replace current progress with this backup?")){S=Object.assign(fresh(),d);locked=!!S.pin;save();root("home");toast("Backup restored")}}
+  catch(x){toast("That file isn't a valid MathQuest backup")}};r.readAsText(f)});
+async function hashPin(pin,salt){try{const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(salt+":"+pin));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}catch(e){return "f"+btoa(salt+":"+pin)}}
+document.addEventListener("visibilitychange",()=>{if(document.hidden)window.__hid=Date.now();else if(S.pin&&window.__hid&&Date.now()-window.__hid>60000){locked=true;L={buf:"",err:""};render()}});
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();window.__ip=e;render()});
+if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+
+/* ---------- confetti ---------- */
+function confetti(){
+ const c=$("#fx"),x=c.getContext("2d");c.width=innerWidth;c.height=innerHeight;
+ if(window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+ const cols=["#ffd23f","#5be3a4","#7cc4ff","#ff8fa3","#c9a7ff"];
+ const P=Array.from({length:110},()=>({x:Math.random()*c.width,y:-20-Math.random()*c.height*.5,w:6+Math.random()*6,h:8+Math.random()*8,vy:2+Math.random()*4,vx:-2+Math.random()*4,r:Math.random()*6,vr:-.2+Math.random()*.4,c:cols[Math.random()*5|0]}));
+ let f=0;(function t(){x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h);x.restore()});
+  if(++f<150)requestAnimationFrame(t);else x.clearRect(0,0,c.width,c.height)})();
+}
+render();
+</script>
+</body>
+</html>
