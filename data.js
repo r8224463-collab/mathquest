@@ -1,6 +1,6 @@
 // Each question: [question, [4 options], correctIndex, explanation]
 const UNITS = [
-{id:"u1", n:"Unit 1", t:"Differential Calculus", e:"📐", c:"#ffd23f", topics:[
+{id:"u1", n:"Unit 1", t:"Differential Calculus", e:"📐", c:"#4df2ff", topics:[
  {id:"u1t1", t:"Leibnitz theorem & nth derivative", notes:"Q1–Q3",
   k:"Dⁿ(uv) = Σ ⁿCᵣ · Dⁿ⁻ʳu · Dʳv. Differentiate the given relation n times, then put x = 0 to get a recurrence.",
   qs:[
@@ -57,7 +57,7 @@ const UNITS = [
  ]}
 ]},
 
-{id:"u2", n:"Unit 2", t:"Multivariable Calculus", e:"🧮", c:"#7cc4ff", topics:[
+{id:"u2", n:"Unit 2", t:"Multivariable Calculus", e:"🧮", c:"#ff4fd8", topics:[
  {id:"u2t1", t:"Limits & continuity", notes:"Q19–Q21",
   k:"Limit exists only if it is the same along every path. Continuity at P: f defined, limit exists, limit = f(P).",
   qs:[
@@ -114,7 +114,7 @@ const UNITS = [
  ]}
 ]},
 
-{id:"u3", n:"Unit 3", t:"Integral Calculus", e:"∫", c:"#5be3a4", topics:[
+{id:"u3", n:"Unit 3", t:"Integral Calculus", e:"∫", c:"#ffb347", topics:[
  {id:"u3t1", t:"Gamma & Beta type integrals", notes:"Q42",
   k:"∫₀^∞ xⁿe⁻ˣdx = Γ(n+1). ∫₀^∞ x^m e^(−ax^n) dx = (1/n)·Γ((m+1)/n)/a^((m+1)/n). Γ(½) = √π.",
   qs:[
@@ -153,7 +153,7 @@ const UNITS = [
  ]}
 ]},
 
-{id:"u4", n:"Unit 4", t:"Multiple Integrals & Applications", e:"🧊", c:"#ff8fa3", topics:[
+{id:"u4", n:"Unit 4", t:"Multiple Integrals & Applications", e:"🧊", c:"#7dff9b", topics:[
  {id:"u4t1", t:"Double/triple integrals & change of order", notes:"Q55–Q57",
   k:"Sketch the region, swap the limits, integrate the easier order first. Polar: dx dy = r dr dθ.",
   qs:[
@@ -210,7 +210,7 @@ const UNITS = [
  ]}
 ]},
 
-{id:"u5", n:"Unit 5", t:"Vector Calculus", e:"🧭", c:"#c9a7ff", topics:[
+{id:"u5", n:"Unit 5", t:"Vector Calculus", e:"🧭", c:"#a78bfa", topics:[
  {id:"u5t1", t:"Gradient, directional derivative & motion", notes:"Q73–Q82",
   k:"∇φ = φₓi + φᵧj + φ_zk, normal to φ = c. Directional derivative = ∇φ·â. Velocity = dr/dt, acceleration = d²r/dt².",
   qs:[
